@@ -1,5 +1,9 @@
 package ru.aza954.SpringMvc2.dao;
 
+import jakarta.transaction.Transactional;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -11,36 +15,58 @@ import java.util.List;
 
 @Component
 public class PersonDAO {
-    private final JdbcTemplate jdbcTemplate;
+    private final SessionFactory sessionFactory;
 
-    public PersonDAO(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    @Autowired
+    public PersonDAO(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+
     }
+
+    @Transactional
     public List<Person> index(){
-        return jdbcTemplate.query("SELECT * FROM person", new BeanPropertyRowMapper<>(Person.class));
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("select p from Person p", Person.class).getResultList();
+
 
     }
+    @Transactional
     public Person show(int id){
-        if (jdbcTemplate.query("SELECT * FROM person WHERE user_id=?",new Object[]{id},new BeanPropertyRowMapper<>(Person.class)).isEmpty()){
-            return null;
-        }
-        else return jdbcTemplate.query("SELECT * FROM person WHERE user_id=?",new Object[]{id},new BeanPropertyRowMapper<>(Person.class)).get(0);
+        Session session = sessionFactory.getCurrentSession();
+        return session.get(Person.class,id);
 
 
     }
+    @Transactional
     public void newPerson(Person person){
-        jdbcTemplate.update("INSERT INTO person(fullName, yearOfbirth) values (?,?)",person.getFullname(),person.getYearofbirth());
+        Session session = sessionFactory.getCurrentSession();
+        session.persist(person);
+
     }
+    @Transactional
     public List<Book> getBooks(int id){
-        return jdbcTemplate.query("SELECT book_id,Book.user_id,author,name,year from book join person on person.user_id = book.user_id and Person.user_id =?",new BeanPropertyRowMapper<>(Book.class),id);
+        Session session = sessionFactory.getCurrentSession();
+        Person person = session.get(Person.class,id);
+        System.out.println(person.getBooks());
+        return person.getBooks();
     }
+    @Transactional
     public void delete(int id){
-        jdbcTemplate.update("DELETE FROM person where user_id=?",id);
+        Session session = sessionFactory.getCurrentSession();
+        Person person = session.get(Person.class,id);
+        session.remove(person);
+
 
     }
 
+    @Transactional
     public void update(int id, Person updatedPerson){
-        jdbcTemplate.update("UPDATE person set fullName=?,yearOfbirth=? where user_id=?",updatedPerson.getFullname(),updatedPerson.getYearofbirth(),id);
+        Session session = sessionFactory.getCurrentSession();
+        Person person = session.get(Person.class,id);
+        person.setFullname(updatedPerson.getFullname());
+        person.setYearofbirth(updatedPerson.getYearofbirth());
+
+
 
 
     }

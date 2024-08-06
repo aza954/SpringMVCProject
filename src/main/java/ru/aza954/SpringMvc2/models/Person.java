@@ -1,17 +1,33 @@
 package ru.aza954.SpringMvc2.models;
 
+import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
 public class Person {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private int user_id;
+    @Column(name = "fullname")
+
     private String fullname;
-    @Min(value = 2000,message = "Ti konch")
+    @Min(value = 1950,message = "Минимум 1950")
+    @Max(value = 2023,message = "Максимум 2023")
+    @Column(name = "yearofbirth")
     private int yearofbirth;
+
+    @OneToMany(mappedBy = "owner",fetch = FetchType.EAGER)
+    private List<Book> books;
 
     public Person(){
 
     }
-    public Person(int user_id, String fullname, int yearofbirth) {
-        this.user_id = user_id;
+    public Person(String fullname, int yearofbirth) {
+
         this.fullname = fullname;
         this.yearofbirth = yearofbirth;
     }
@@ -40,5 +56,23 @@ public class Person {
         this.yearofbirth = yearofbirth;
     }
 
+    public List<Book> getBooks() {
+        if (this.books == null){
+            this.books = new ArrayList<>();
+        }
+        return books;
+    }
 
+    public void setBooks(List<Book> books) {
+
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "user_id=" + user_id +
+                ", fullname='" + fullname + '\'' +
+                ", yearofbirth=" + yearofbirth +
+                '}';
+    }
 }

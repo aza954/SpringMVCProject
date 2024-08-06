@@ -12,7 +12,7 @@
     <input type="text" th:field="*{fullname}" id="fullname">
 
     <br>
-    <label for="yearofbirth">Enter author: </label>
+    <label for="yearofbirth">Enter year of birth: </label>
     <input type="text" th:field="*{yearofbirth}" id="yearofbirth">
     <div th:if="${#fields.hasErrors('yearofbirth')}" th:errors="*{yearofbirth}">Error</div>
     <br>

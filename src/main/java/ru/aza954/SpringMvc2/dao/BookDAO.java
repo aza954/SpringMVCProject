@@ -1,56 +1,101 @@
 package ru.aza954.SpringMvc2.dao;
 
+import jakarta.transaction.Transactional;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.aza954.SpringMvc2.models.Book;
 import ru.aza954.SpringMvc2.models.Person;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class BookDAO {
-    private final JdbcTemplate jdbcTemplate;
+    private final SessionFactory sessionFactory;
 
-    public BookDAO(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    @Autowired
+    public BookDAO(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
+
+    @Transactional
     public List<Book> index(){
-        return jdbcTemplate.query("SELECT * FROM book", new BeanPropertyRowMapper<>(Book.class));
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("select b from Book b", Book.class).getResultList();
 
     }
+    @Transactional
     public Book show(int id){
-        if (jdbcTemplate.query("SELECT * FROM book WHERE book_id=?",new Object[]{id},new BeanPropertyRowMapper<>(Book.class)).isEmpty()){
-            return null;
-        }
-        else return jdbcTemplate.query("SELECT * FROM book WHERE book_id=?",new Object[]{id},new BeanPropertyRowMapper<>(Book.class)).get(0);
+        Session session = sessionFactory.getCurrentSession();
+        return session.get(Book.class,id);
 
 
     }
+    @Transactional
     public void newBook(Book book){
-        jdbcTemplate.update("insert into book(author, year,name)  values(?, ?,?);",book.getAuthor(),book.getYear(),book.getName());
-    }
+        Session session = sessionFactory.getCurrentSession();
+        session.persist(book);
 
+    }
+    @Transactional
     public List<Book> checkBook(int id){
-        return jdbcTemplate.query("SELECT * from Book where book_id=? and user_id IS NULL", new BeanPropertyRowMapper<>(Book.class),id);
+        Session session = sessionFactory.getCurrentSession();
+
+        return session.createQuery("select b from Book b where book_id=id and owner is null ", Book.class).getResultList();
     }
+    @Transactional
     public void setBook(int bookId,int personId){
-        jdbcTemplate.update("UPDATE book set user_id=? where book_id=?",personId,bookId);
-    }
+        Session session = sessionFactory.getCurrentSession();
+        Book book = session.get(Book.class,bookId);
+        Person person = session.get(Person.class,personId);
+        book.setOwner(person);
+        person.getBooks().add(book);
+//        Person person = session.get(Person.class,personId);
+//        Query query = session.createQuery("UPDATE Book SET owner = :person WHERE book_id = :bookId");
+//        query.setParameter("person", person);
+//        query.setParameter("bookId", bookId);
+//        query.executeUpdate();
 
+    }
+    @Transactional
     public List<Person> getPerson(int id){
-        return jdbcTemplate.query("SELECT Person.user_id,fullName,yearOfbirth from person join book on person.user_id = book.user_id and book_id=?",new BeanPropertyRowMapper<>(Person.class),id);
+        Session session = sessionFactory.getCurrentSession();
+        Book book = session.get(Book.class,id);
+        List<Person> people = new ArrayList<>();
+        people.add(book.getOwner());
+        return people;
     }
+    @Transactional
     public void takeBook(int id){
-        jdbcTemplate.update("UPDATE book set user_id= null where book_id=?",id);
+        Session session = sessionFactory.getCurrentSession();
+        Book book = session.get(Book.class,id);
+        Person person = session.get(Person.class,book.getOwner().getUser_id());
+        book.setOwner(null);
+        person.getBooks().remove(book);
+
+
     }
+    @Transactional
     public void updateBook(Book book,int id){
-        jdbcTemplate.update("UPDATE book set name=?,author=?,year=? where book_id =?",book.getName(),book.getAuthor(),book.getYear(),id);
+        Session session = sessionFactory.getCurrentSession();
+        Book booktobeupdate = session.get(Book.class,id);
+        booktobeupdate.setAuthor(book.getAuthor());
+        booktobeupdate.setName(book.getName());
+        booktobeupdate.setYear(book.getYear());
+
 
 
     }
+    @Transactional
     public void deleteBook(int id){
-        jdbcTemplate.update("DELETE from book where book_id=?",id);
+        Session session = sessionFactory.getCurrentSession();
+        Book book = session.get(Book.class,id);
+        session.remove(book);
     }
 
 

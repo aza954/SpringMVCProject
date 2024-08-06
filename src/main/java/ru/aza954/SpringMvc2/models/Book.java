@@ -1,17 +1,39 @@
 package ru.aza954.SpringMvc2.models;
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
+import java.util.List;
+import java.util.Objects;
+
+@Entity
+@Table(name = "book")
+
 public class Book {
+    @Id
+    @Column(name = "book_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int book_id;
+
+    @Column(name = "year")
     private int year;
+    @Column(name = "name")
     private String name;
+    @Column(name = "author")
     private String author;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id",referencedColumnName = "user_id")
+    private Person owner;
 
     public Book(){
 
     }
 
-    public Book(int book_id, int year, String name, String author) {
-        this.book_id = book_id;
+    public Book( int year, String name, String author) {
+
         this.year = year;
         this.name = name;
         this.author = author;
@@ -47,5 +69,37 @@ public class Book {
 
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    public Person getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Person owner) {
+        this.owner = owner;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Book book = (Book) o;
+        return book_id == book.book_id && year == book.year && Objects.equals(name, book.name) && Objects.equals(author, book.author);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(book_id, year, name, author);
+    }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+
+                ", author='" + author + '\'' +
+                ", name='" + name + '\'' +
+                ", year=" + year +
+                ", book_id=" + book_id +
+                '}';
     }
 }

@@ -9,27 +9,33 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.aza954.SpringMvc2.dao.PersonDAO;
 import ru.aza954.SpringMvc2.models.Person;
+import ru.aza954.SpringMvc2.services.PeopleService;
 
 @Controller
 @RequestMapping("/people")
 public class PersonController {
-    private final PersonDAO personDAO;
+    private final PeopleService peopleService;
+//    private final PersonDAO personDAO;
 
     @Autowired
-    public PersonController(PersonDAO personDAO) {
-        this.personDAO = personDAO;
+    public PersonController(PeopleService peopleService, PersonDAO personDAO) {
+        this.peopleService = peopleService;
+//        this.personDAO = personDAO;
     }
 
     @GetMapping
     public String index(Model model){
-        model.addAttribute("people",personDAO.index());
+        model.addAttribute("people",peopleService.findAll());
         return "Person/index";
     }
 
     @GetMapping("/{id}")
     public String show(@PathVariable("id") int id,Model model){
-        model.addAttribute("person",personDAO.show(id));
-        model.addAttribute("books",personDAO.getBooks(id));
+        model.addAttribute("person",peopleService.findOne(id));
+        System.out.println(peopleService.findOne(id));
+
+       model.addAttribute("books",peopleService.findBooks(id));
+        System.out.println(peopleService.findBooks(id));
         return "Person/show";
     }
 
@@ -43,7 +49,7 @@ public class PersonController {
         if (bindingResult.hasErrors()){
             return "Person/new";
         }
-        personDAO.newPerson(person);
+        peopleService.save(person);
 
         return "redirect:/people";
     }
@@ -51,17 +57,17 @@ public class PersonController {
 
     @DeleteMapping("/{id}/delete")
     public String delete(@PathVariable("id") int id){
-        personDAO.delete(id);
+        peopleService.delete(id);
         return "redirect:/people";
     }
     @GetMapping("/{id}/edit")
     public String toedit(@PathVariable("id") int id,Model model){
-        model.addAttribute("person",personDAO.show(id));
+        model.addAttribute("person",peopleService.findOne(id));
         return "Person/edit";
     }
     @PatchMapping("/{id}/edit")
     public String edit(@PathVariable("id") int id,@ModelAttribute Person person){
-        personDAO.update(id,person);
+        peopleService.update(id,person);
         return "redirect:/people";
     }
 }
