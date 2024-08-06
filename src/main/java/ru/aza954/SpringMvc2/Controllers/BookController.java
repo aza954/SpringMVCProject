@@ -1,6 +1,7 @@
 package ru.aza954.SpringMvc2.Controllers;
 
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -53,7 +54,7 @@ public class BookController {
         return "Book/new";
     }
     @PostMapping
-    public String createBook(@ModelAttribute Book book, BindingResult bindingResult){
+    public String createBook(@Valid @ModelAttribute Book book, BindingResult bindingResult){
         if (bindingResult.hasErrors()){
             return "Book/new";
         }

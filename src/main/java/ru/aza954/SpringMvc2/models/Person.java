@@ -13,7 +13,7 @@ public class Person {
     @Column(name = "user_id")
     private int user_id;
     @Column(name = "fullname")
-
+    @NotBlank
     private String fullname;
     @Min(value = 1950,message = "Минимум 1950")
     @Max(value = 2023,message = "Максимум 2023")

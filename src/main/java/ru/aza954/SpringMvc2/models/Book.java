@@ -19,9 +19,12 @@ public class Book {
 
     @Column(name = "year")
     private int year;
+
     @Column(name = "name")
+    @NotBlank
     private String name;
     @Column(name = "author")
+    @NotBlank
     private String author;
 
     @ManyToOne
